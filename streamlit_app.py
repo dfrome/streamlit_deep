@@ -1,33 +1,29 @@
-"""
 import streamlit as st
 from tensorflow.keras.models import load_model
 import numpy as np
-from sklearn.preprocessing import Normalizer
 
 st.title("Modèle Word2Vec")
 
-# Load the pre-trained model
-@st.cache(allow_output_mutation=True)
-def load_model_and_vectors():
-    model = load_model('word2vec.h5')
-    vectors = model.layers[0].get_weights()[0]
-    return model, vectors
+# Charger le modèle pré-entraîné
+model = load_model('word2vec.h5')
+vectors = model.layers[0].get_weights()[0]
 
-model, vectors = load_model_and_vectors()
+# Charger le tokenizer
+import pickle
+with open('tokenizer.pickle', 'rb') as handle:
+    tokenizer = pickle.load(handle)
+word2idx = tokenizer.word_index
+idx2word = {v: k for k, v in word2idx.items()}
 
-# Display model summary
-with st.expander("Model Summary"):
-    st.write(model.summary())
-
-# Example of using word vectors
+# Fonction pour calculer la similarité cosinus
 def dot_product(vec1, vec2):
     return np.sum((vec1 * vec2))
 
 def cosine_similarity(vec1, vec2):
     return dot_product(vec1, vec2) / np.sqrt(dot_product(vec1, vec1) * dot_product(vec2, vec2))
 
-# Function to find closest words
-def find_closest(word_index, vectors, number_closest=5):
+# Fonction pour trouver les mots les plus proches
+def find_closest(word_index, vectors, number_closest=10):
     list1 = []
     query_vector = vectors[word_index]
     for index, vector in enumerate(vectors):
@@ -36,27 +32,23 @@ def find_closest(word_index, vectors, number_closest=5):
             list1.append([dist, index])
     return np.asarray(sorted(list1, reverse=True)[:number_closest])
 
-# User inputs for word similarity
-st.sidebar.header("Word Similarity Inputs")
-word_index_1 = st.sidebar.number_input("Enter first word index:", min_value=0, max_value=len(vectors)-1, value=0)
-word_index_2 = st.sidebar.number_input("Enter second word index:", min_value=0, max_value=len(vectors)-1, value=1)
+# Fonction mise à jour pour afficher les mots les plus proches
+def print_closest(word, vectors, number=10):
+    index_closest_words = find_closest(word2idx[word], vectors, number)
+    closest_words = [(idx2word[index_word[1]], index_word[0]) for index_word in index_closest_words]
+    return closest_words
 
-# Calculate and display cosine similarity
-vector_1 = vectors[word_index_1]
-vector_2 = vectors[word_index_2]
-similarity = cosine_similarity(vector_1, vector_2)
-st.sidebar.write(f'Cosine similarity between word {word_index_1} and word {word_index_2}: {similarity:.4f}')
+# Widget pour entrer un mot
+word = st.text_input("Entrez un mot:")
 
-# User inputs for finding closest words
-st.header("Find Closest Words")
-word_index = st.number_input("Enter word index to find closest words:", min_value=0, max_value=len(vectors)-1, value=0)
-number_closest = st.number_input("Number of closest words:", min_value=1, max_value=10, value=5)
-closest_words = find_closest(word_index, vectors, number_closest)
-
-# Display closest words
-st.write(f"Closest words to word index {word_index}:")
-for dist, idx in closest_words:
-    st.write(f"Word index: {idx}, Cosine similarity: {dist:.4f}")
+if word:
+    if word in word2idx:
+        closest_words = print_closest(word, vectors)
+        st.write(f"Les 10 mots les plus proches de '{word}' sont :")
+        for word, similarity in closest_words:
+            st.write(f"{word} -- {similarity:.4f}")
+    else:
+        st.error("Le mot n'est pas dans le vocabulaire.")
 
 """
 import streamlit as st
@@ -122,7 +114,7 @@ try:
 except Exception as e:
     st.error(f"An error occurred while loading the model: {e}")
 
-
+"""
 
 
 """

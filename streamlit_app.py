@@ -1,6 +1,5 @@
 import streamlit as st
 from tensorflow.keras.models import load_model
-import tensorflow as tf
 import numpy as np
 from sklearn.preprocessing import Normalizer
 
@@ -10,14 +9,22 @@ st.title("Modèle Word2Vec")
 model = load_model('word2vec.h5')
 vectors = model.layers[0].get_weights()[0]
 
-# Define the vocabulary size
-vocab_size = vectors.shape[0]
+# Define a sample vocabulary (this should match the tokenizer used during training)
+sample_vocabulary = {
+    'example': 1,
+    'word': 2,
+    'test': 3,
+    'sample': 4,
+    'language': 5,
+    'model': 6,
+    'vector': 7,
+    'embedding': 8,
+    'neural': 9,
+    'network': 10
+}
 
-# Create a tokenizer dynamically
-tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=vocab_size)
-tokenizer.fit_on_texts([""])  # Dummy fit to initialize internal structures
-word2idx = tokenizer.word_index
-idx2word = {v: k for k, v in word2idx.items()}
+# Reverse the vocabulary mapping
+idx2word = {v: k for k, v in sample_vocabulary.items()}
 
 # Function to calculate cosine similarity
 def dot_product(vec1, vec2):
@@ -38,7 +45,7 @@ def find_closest(word_index, vectors, number_closest=10):
 
 # Function to return closest words
 def print_closest(word, vectors, number=10):
-    index_closest_words = find_closest(word2idx[word], vectors, number)
+    index_closest_words = find_closest(sample_vocabulary[word], vectors, number)
     closest_words = [(idx2word[index_word[1]], index_word[0]) for index_word in index_closest_words]
     return closest_words
 
@@ -46,7 +53,7 @@ def print_closest(word, vectors, number=10):
 word = st.text_input("Entrez un mot:")
 
 if word:
-    if word in word2idx:
+    if word in sample_vocabulary:
         closest_words = print_closest(word, vectors)
         st.write(f"Les 10 mots les plus proches de '{word}' sont :")
         for word, similarity in closest_words:

@@ -1,16 +1,24 @@
 import streamlit as st
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Embedding, Dense, GlobalAveragePooling1D
-
+import tensorflow as tf
+from tensorflow.keras.models import load_model
 st.title("Modèle Word2Vec")
+# Load the pre-trained model
+model = load_model('word2vec.h5')
 
+# Extract word vectors from the embedding layer
+#vectors = model.layers[0].trainable_weights[0].numpy()
+
+# Define the vocabulary size
+vocab_size = 10000  # Example value, replace with your actual vocabulary size
 embedding_dim = 300
 model = Sequential()
 model.add(Embedding(vocab_size, embedding_dim))
 model.add(GlobalAveragePooling1D())
 model.add(Dense(vocab_size, activation='softmax'))
 
-model.load_weights("word2vec.h5")
+#model.load_weights("word2vec.h5")
 vectors = model.layers[0].trainable_weights[0].numpy()
 import numpy as np
 from sklearn.preprocessing import Normalizer

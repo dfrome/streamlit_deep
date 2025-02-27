@@ -1,3 +1,4 @@
+"""
 import streamlit as st
 from tensorflow.keras.models import load_model
 import numpy as np
@@ -65,53 +66,64 @@ from sklearn.preprocessing import Normalizer
 
 st.title("Modèle Word2Vec")
 
+# Define the file path for the model
+file_path = 'word2vec.h5'
+
 # Load the pre-trained model
-model = load_model('word2vec.h5')
+try:
+    model = load_model(file_path)
+    vectors = model.layers[0].get_weights()[0]
 
-# Extract word vectors from the embedding layer
-vectors = model.layers[0].get_weights()[0]
+    # Display model summary
+    with st.expander("Model Summary"):
+        model_summary = []
+        model.summary(print_fn=lambda x: model_summary.append(x))
+        st.text('\n'.join(model_summary))
 
-# Display model summary
-st.write("Model Summary:")
-model.summary()
+    # Example of using word vectors
+    def dot_product(vec1, vec2):
+        return np.sum((vec1 * vec2))
 
-# Example of using word vectors
-# Suppose you have word indices for demonstration
-word_index_1 = 1  # Replace with actual word index
-word_index_2 = 2  # Replace with actual word index
+    def cosine_similarity(vec1, vec2):
+        return dot_product(vec1, vec2) / np.sqrt(dot_product(vec1, vec1) * dot_product(vec2, vec2))
 
-# Calculate cosine similarity between two word vectors
-def dot_product(vec1, vec2):
-    return np.sum((vec1 * vec2))
+    # Function to find closest words
+    def find_closest(word_index, vectors, number_closest=5):
+        list1 = []
+        query_vector = vectors[word_index]
+        for index, vector in enumerate(vectors):
+            if not np.array_equal(vector, query_vector):
+                dist = cosine_similarity(vector, query_vector)
+                list1.append([dist, index])
+        return np.asarray(sorted(list1, reverse=True)[:number_closest])
 
-def cosine_similarity(vec1, vec2):
-    return dot_product(vec1, vec2) / np.sqrt(dot_product(vec1, vec1) * dot_product(vec2, vec2))
+    # User inputs for word similarity
+    st.sidebar.header("Word Similarity Inputs")
+    word_index_1 = st.sidebar.number_input("Enter first word index:", min_value=0, max_value=len(vectors)-1, value=0)
+    word_index_2 = st.sidebar.number_input("Enter second word index:", min_value=0, max_value=len(vectors)-1, value=1)
 
-vector_1 = vectors[word_index_1]
-vector_2 = vectors[word_index_2]
+    # Calculate and display cosine similarity
+    vector_1 = vectors[word_index_1]
+    vector_2 = vectors[word_index_2]
+    similarity = cosine_similarity(vector_1, vector_2)
+    st.sidebar.write(f'Cosine similarity between word {word_index_1} and word {word_index_2}: {similarity:.4f}')
 
-similarity = cosine_similarity(vector_1, vector_2)
-st.write(f'Cosine similarity between word {word_index_1} and word {word_index_2}: {similarity:.4f}')
+    # User inputs for finding closest words
+    st.header("Find Closest Words")
+    word_index = st.number_input("Enter word index to find closest words:", min_value=0, max_value=len(vectors)-1, value=0)
+    number_closest = st.number_input("Number of closest words:", min_value=1, max_value=10, value=5)
+    closest_words = find_closest(word_index, vectors, number_closest)
 
-# Function to find closest words
-def find_closest(word_index, vectors, number_closest=5):
-    list1 = []
-    query_vector = vectors[word_index]
-    for index, vector in enumerate(vectors):
-        if not np.array_equal(vector, query_vector):
-            dist = cosine_similarity(vector, query_vector)
-            list1.append([dist, index])
-    return np.asarray(sorted(list1, reverse=True)[:number_closest])
+    # Display closest words
+    st.write(f"Closest words to word index {word_index}:")
+    for dist, idx in closest_words:
+        st.write(f"Word index: {idx}, Cosine similarity: {dist:.4f}")
 
-# Display closest words for a given word index
-word_index = st.number_input("Enter word index:", min_value=0, max_value=len(vectors)-1, value=0)
-number_closest = st.number_input("Number of closest words:", min_value=1, max_value=10, value=5)
-closest_words = find_closest(word_index, vectors, number_closest)
-st.write(f"Closest words to word index {word_index}:")
-for dist, idx in closest_words:
-    st.write(f"Word index: {idx}, Cosine similarity: {dist:.4f}")
+except Exception as e:
+    st.error(f"An error occurred while loading the model: {e}")
 
-"""
+
+
 
 """
 import streamlit as st

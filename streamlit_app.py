@@ -23,7 +23,7 @@ print("Modèle chargé avec succès!")
 
 # Extraire la matrice d'embeddings
 embedding_matrix = model.layers[0].get_weights()[0]
-print("Matrice d'embeddings extraite avec succès!"
+print("Matrice d'embeddings extraite avec succès!")
 # end of alternative
 
 vectors = model.layers[0].trainable_weights[0].numpy()

@@ -9,7 +9,7 @@ vocab_size=10000
 WINDOW_SIZE=5
 
 model = Sequential()
-model.add(Embedding(vocab_size, embedding_dim, WINDOW_SIZE))
+model.add(Embedding(vocab_size, embedding_dim, input_length=WINDOW_SIZE))
 model.add(GlobalAveragePooling1D())
 model.add(Dense(vocab_size, activation='softmax'))
 

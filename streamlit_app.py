@@ -3,6 +3,7 @@ from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Embedding, Dense, GlobalAveragePooling1D
 import numpy as np
 from sklearn.preprocessing import Normalizer
+import pickle
 
 # Load the tokenizer
 with open('tokenizer.pickle', 'rb') as handle:

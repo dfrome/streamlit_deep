@@ -12,8 +12,14 @@ model = Sequential()
 model.add(Embedding(vocab_size, embedding_dim, input_length=WINDOW_SIZE))
 model.add(GlobalAveragePooling1D())
 model.add(Dense(vocab_size, activation='softmax'))
-
-model.load_weights("word2vec.h5")
+"""
+we used for the saved model:
+model = Sequential()
+model.add(Embedding(vocab_size, embedding_dim, input_length=WINDOW_SIZE))
+model.add(GlobalAveragePooling1D())
+model.add(Dense(vocab_size, activation='softmax'))
+"""
+model.load_weights("word2vec.weights.h5")
 #print("Poids du modèle chargés.")
 
 # alternative

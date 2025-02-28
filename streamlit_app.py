@@ -14,7 +14,7 @@ model.add(GlobalAveragePooling1D())
 model.add(Dense(vocab_size, activation='softmax'))
 
 # Build the model in order prepare to load the weights
-model.build((None, input_length))
+model.build((None, WINDOW_SIZE))
 
 """
 we used for the saved model:

@@ -1,6 +1,15 @@
 import streamlit as st
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Embedding, Dense, GlobalAveragePooling1D
+import numpy as np
+from sklearn.preprocessing import Normalizer
+
+# Load the tokenizer
+with open('tokenizer.pickle', 'rb') as handle:
+    tokenizer = pickle.load(handle)
+
+word2idx = tokenizer.word_index
+idx2word = tokenizer.index_word
 
 st.title("Modèle Word2Vec")
 
@@ -38,8 +47,6 @@ model.load_weights("word2vec.weights.h5")
 # end of alternative
 
 vectors = model.layers[0].trainable_weights[0].numpy()
-import numpy as np
-from sklearn.preprocessing import Normalizer
 
 def dot_product(vec1, vec2):
     return np.sum((vec1*vec2))
@@ -71,7 +78,7 @@ def compare(index_word1, index_word2, index_word3, vectors, number_closest):
 def print_closest(word, number=5):
     index_closest_words = find_closest(word2idx[word], vectors, number)
     for index_word in index_closest_words :
-        st.write(idx2word[index_word[1]]," -- ",index_word[0])
+        st.write(f"{idx2word[index_word[1]]} -- {index_word[0]}")
 
 # Widget pour demander un mot à l'utilisateur
 word = st.text_input("Entrez un mot:")

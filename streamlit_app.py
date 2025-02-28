@@ -12,6 +12,10 @@ model = Sequential()
 model.add(Embedding(vocab_size, embedding_dim, input_length=WINDOW_SIZE))
 model.add(GlobalAveragePooling1D())
 model.add(Dense(vocab_size, activation='softmax'))
+
+# Build the model in order prepare to load the weights
+model.build((None, input_length))
+
 """
 we used for the saved model:
 model = Sequential()

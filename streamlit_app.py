@@ -8,13 +8,23 @@ embedding_dim = 300
 vocab_size=10000
 WINDOW_SIZE=5
 
-model = Sequential()
-model.add(Embedding(vocab_size, embedding_dim, input_length=WINDOW_SIZE))
-model.add(GlobalAveragePooling1D())
-model.add(Dense(vocab_size, activation='softmax'))
+#model = Sequential()
+#model.add(Embedding(vocab_size, embedding_dim, input_length=WINDOW_SIZE))
+#model.add(GlobalAveragePooling1D())
+#model.add(Dense(vocab_size, activation='softmax'))
+#
+#model.load_weights("word2vec.h5")
+#print("Poids du modèle chargés.")
 
-model.load_weights("word2vec.h5")
-print("Poids du modèle chargés.")
+# alternative
+# Charger le modèle entier
+model = load_model('word2vec_model.h5')
+print("Modèle chargé avec succès!")
+
+# Extraire la matrice d'embeddings
+embedding_matrix = model.layers[0].get_weights()[0]
+print("Matrice d'embeddings extraite avec succès!"
+# end of alternative
 
 vectors = model.layers[0].trainable_weights[0].numpy()
 import numpy as np

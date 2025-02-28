@@ -8,23 +8,23 @@ embedding_dim = 300
 vocab_size=10000
 WINDOW_SIZE=5
 
-#model = Sequential()
-#model.add(Embedding(vocab_size, embedding_dim, input_length=WINDOW_SIZE))
-#model.add(GlobalAveragePooling1D())
-#model.add(Dense(vocab_size, activation='softmax'))
-#
-#model.load_weights("word2vec.h5")
+model = Sequential()
+model.add(Embedding(vocab_size, embedding_dim, input_length=WINDOW_SIZE))
+model.add(GlobalAveragePooling1D())
+model.add(Dense(vocab_size, activation='softmax'))
+
+model.load_weights("word2vec.h5")
 #print("Poids du modèle chargés.")
 
 # alternative
 # Charger le modèle entier
-from tensorflow.keras.models import load_model
-model = load_model('word2vec.h5')
-print("Modèle chargé avec succès!")
+#from tensorflow.keras.models import load_model
+#model = load_model('word2vec.h5')
+#print("Modèle chargé avec succès!")
 
 # Extraire la matrice d'embeddings
-embedding_matrix = model.layers[0].get_weights()[0]
-print("Matrice d'embeddings extraite avec succès!")
+#embedding_matrix = model.layers[0].get_weights()[0]
+#print("Matrice d'embeddings extraite avec succès!")
 # end of alternative
 
 vectors = model.layers[0].trainable_weights[0].numpy()
@@ -61,7 +61,7 @@ def compare(index_word1, index_word2, index_word3, vectors, number_closest):
 def print_closest(word, number=5):
     index_closest_words = find_closest(word2idx[word], vectors, number)
     for index_word in index_closest_words :
-        print(idx2word[index_word[1]]," -- ",index_word[0])
+        st.write(idx2word[index_word[1]]," -- ",index_word[0])
 
 # Widget pour demander un mot à l'utilisateur
 word = st.text_input("Entrez un mot:")

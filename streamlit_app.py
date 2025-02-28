@@ -1,62 +1,58 @@
 import streamlit as st
-from tensorflow.keras.models import load_model
-import numpy as np
-from sklearn.preprocessing import Normalizer
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Embedding, Dense, GlobalAveragePooling1D
 
 st.title("Modèle Word2Vec")
 
-# Load the pre-trained model
-model = load_model('word2vec.h5')
-vectors = model.layers[0].get_weights()[0]
+embedding_dim = 300
+vocab_size=10000
+WINDOW_SIZE=5
 
-# Define a sample vocabulary (this should match the tokenizer used during training)
-sample_vocabulary = {
-    'example': 1,
-    'word': 2,
-    'test': 3,
-    'sample': 4,
-    'language': 5,
-    'model': 6,
-    'vector': 7,
-    'embedding': 8,
-    'neural': 9,
-    'network': 10
-}
+model = Sequential()
+model.add(Embedding(vocab_size, embedding_dim, WINDOW_SIZE))
+model.add(GlobalAveragePooling1D())
+model.add(Dense(vocab_size, activation='softmax'))
 
-# Reverse the vocabulary mapping
-idx2word = {v: k for k, v in sample_vocabulary.items()}
+model.load_weights("word2vec.h5")
+print("Poids du modèle chargés.")
 
-# Function to calculate cosine similarity
+vectors = model.layers[0].trainable_weights[0].numpy()
+import numpy as np
+from sklearn.preprocessing import Normalizer
+
 def dot_product(vec1, vec2):
-    return np.sum((vec1 * vec2))
+    return np.sum((vec1*vec2))
 
 def cosine_similarity(vec1, vec2):
-    return dot_product(vec1, vec2) / np.sqrt(dot_product(vec1, vec1) * dot_product(vec2, vec2))
+    return dot_product(vec1, vec2)/np.sqrt(dot_product(vec1, vec1)*dot_product(vec2, vec2))
 
-# Function to find closest words
-def find_closest(word_index, vectors, number_closest=10):
-    list1 = []
+def find_closest(word_index, vectors, number_closest):
+    list1=[]
     query_vector = vectors[word_index]
     for index, vector in enumerate(vectors):
         if not np.array_equal(vector, query_vector):
             dist = cosine_similarity(vector, query_vector)
-            list1.append([dist, index])
-    return np.asarray(sorted(list1, reverse=True)[:number_closest])
+            list1.append([dist,index])
+    return np.asarray(sorted(list1,reverse=True)[:number_closest])
 
-# Function to return closest words
-def print_closest(word, vectors, number=10):
-    index_closest_words = find_closest(sample_vocabulary[word], vectors, number)
-    closest_words = [(idx2word[index_word[1]], index_word[0]) for index_word in index_closest_words]
-    return closest_words
+def compare(index_word1, index_word2, index_word3, vectors, number_closest):
+    list1=[]
+    query_vector = vectors[index_word1] - vectors[index_word2] + vectors[index_word3]
+    normalizer = Normalizer()
+    query_vector =  normalizer.fit_transform([query_vector], 'l2')
+    query_vector= query_vector[0]
+    for index, vector in enumerate(vectors):
+        if not np.array_equal(vector, query_vector):
+            dist = cosine_similarity(vector, query_vector)
+            list1.append([dist,index])
+    return np.asarray(sorted(list1,reverse=True)[:number_closest])
 
-# Widget to input a word
+def print_closest(word, number=5):
+    index_closest_words = find_closest(word2idx[word], vectors, number)
+    for index_word in index_closest_words :
+        print(idx2word[index_word[1]]," -- ",index_word[0])
+
+# Widget pour demander un mot à l'utilisateur
 word = st.text_input("Entrez un mot:")
-
 if word:
-    if word in sample_vocabulary:
-        closest_words = print_closest(word, vectors)
-        st.write(f"Les 10 mots les plus proches de '{word}' sont :")
-        for word, similarity in closest_words:
-            st.write(f"{word} -- {similarity:.4f}")
-    else:
-        st.error("Le mot n'est pas dans le vocabulaire.")
+    print_closest(word)

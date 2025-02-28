@@ -19,7 +19,7 @@ WINDOW_SIZE=5
 # alternative
 # Charger le modèle entier
 from tensorflow.keras.models import load_model
-model = load_model('word2vec_model.h5')
+model = load_model('word2vec.h5')
 print("Modèle chargé avec succès!")
 
 # Extraire la matrice d'embeddings
